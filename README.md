@@ -1,12 +1,5 @@
 Spring Boot Sample SAML 2.0 Service Provider
 ====================
-
- [![Build Status](https://travis-ci.org/vdenotaris/spring-boot-security-saml-sample.svg?branch=master)](https://travis-ci.org/vdenotaris/spring-boot-security-saml-sample)
- [![DOI](https://zenodo.org/badge/22013861.svg)](https://zenodo.org/badge/latestdoi/22013861)
-[![GitHub forks](https://img.shields.io/github/forks/vdenotaris/spring-boot-security-saml-sample.svg)](https://github.com/vdenotaris/spring-boot-security-saml-sample/network)
-[![GitHub stars](https://img.shields.io/github/stars/vdenotaris/spring-boot-security-saml-sample.svg)](https://github.com/vdenotaris/spring-boot-security-saml-sample/stargazers)
-[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/vdenotaris/spring-boot-security-saml-sample/master/LICENSE)
-
 ---------
 
 ## References
@@ -31,47 +24,17 @@ This project represents a sample implementation of a **SAML 2.0 Service Provider
 
 **SSOCircle** ([ssocircle.com](http://www.ssocircle.com/en/portfolio/publicidp/)) is used as public Identity Provider for test purpose.
 
-- **Author:** Vincenzo De Notaris ([dev@vdenotaris.com](mailto:dev@vdenotaris.com))
-- **Website:** [www.vdenotaris.com](http://www.vdenotaris.com)
-- **Version:**  ` 1.8.0.RELEASE `
-- **Last update**: October 21th, 2017
+## How to running?
 
-Thanks to *Vladimír Schäfer* ([github.com/vschafer](https://github.com/vschafer)) for supporting my work.
+1. ssocicle注册账号
+2. ngrok http 8080 运行反向代理
+3. 运行应用,访问http://xxx.ngrok.io/saml/metadata,获取sp-metadata.xml
+4. 将获取到的sp-metadata.xml配置到ssocicle
+5. 访问http://xxx.ngrok.io/,一步步操作
+6. 在ssocicle做approval的时候,记得要开代理,此处使用的谷歌的防机器人验证码
+7. 点击授权即可登陆成功跳转回应用的UI
 
 ---------
-
-### Run as Docker container
-
-To make it even easier, it is possible to run the project "as-is" also as Docker container. A valid account on [SSOCircle](https://www.ssocircle.com/en/) is needed to perform the authentication process.
-
-**Run as container building a Docker image**
-
-```
-docker run -it --rm -p 8080:8080 -t vdenotaris/spring-saml-sp:1.8.0-mvn-jdk8
-```
-
-*Note: the related Docker image is publicly available on [Docker Hub](https://hub.docker.com/r/vdenotaris/spring-saml-sp/).*
-
-
-The Service Provider is deployed as web application. Enter [http://localhost:8080/](http://localhost:8080/) in a browser to see the application running.
-
-If you’re using Docker natively on Linux, Docker for Mac, or Docker for Windows, then the web app should now be listening on port 8080 on your Docker daemon host. Point your web browser to http://localhost:8080 to find the starting page. If this doesn’t resolve, you can also try [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
-
-If you’re using Docker Machine on a Mac or Windows, use `docker-machine ip MACHINE_VM` to get the IP address of your Docker host. Then, open *http://MACHINE_VM_IP:8080* in a browser. However, please note that the Service Provider is statically registered with localhost as endpoint on SSOCircle. Thus you need to reconfigure the application.
-
-------
-
-### Unit tests
-
-I would like to say thank you to *Alexey Syrtsev* ([github.com/airleks](https://github.com/airleks)) for his contribution on unit tests.
-
-| Metric | Result |
-| ------------- | -----:|
-| Coverage % | 99% |
-| Lines Covered | 196 |
-| Total Lines | 199 |
-
-------
 
 ### Additional notes
 
@@ -94,21 +57,3 @@ To update the SSOCircle certificates within the keystore, just run:
 	> Version is duplicate of parent version.
 
 	Actually there is nothing wrong with the used configuration, thus you can just ignore that message.
-
----------
-
-### License
-
-    Copyright 2017 Vincenzo De Notaris
-
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-	    http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
