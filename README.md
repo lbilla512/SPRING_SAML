@@ -23,6 +23,7 @@ Spring SAML Extension allows seamless inclusion of SAML 2.0 Service Provider cap
 This project represents a sample implementation of a **SAML 2.0 Service Provider**, completely built on **Spring Framework**. In particular, it shows how to develop a web solution devised for Federated Authentication, by integrating **Spring Boot** and **Spring Security SAML**. The configuration has been completely defined using *Java annotations* (no XML).
 
 **SSOCircle** ([ssocircle.com](http://www.ssocircle.com/en/portfolio/publicidp/)) is used as public Identity Provider for test purpose.
+ssocicle[fengxin58:6Alkrx6<]
 
 ## How to running?
 
