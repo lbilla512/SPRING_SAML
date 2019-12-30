@@ -1,4 +1,4 @@
-Spring Boot Sample SAML 2.0 Service Provider
+﻿Spring Boot Sample SAML 2.0 Service Provider
 ====================
 ---------
 
@@ -47,7 +47,8 @@ To update the SSOCircle certificates within the keystore, just run:
 
 	cd src/main/resources/saml/ && sh ./update-certifcate.sh 
 
-2. Sometimes SSO Circle could display you an error during the authenticaton process. In this case, please update your federation metadata directly on [https://idp.ssocircle.com](https://idp.ssocircle.com):
+2. Sometimes SSO Circle could display you an error during the authenticaton process. In this case, please update your federation 
+   metadata directly on [https://idp.ssocircle.com](https://idp.ssocircle.com):
 
 	> Manage Metadata > Service Provider Metadata
 	

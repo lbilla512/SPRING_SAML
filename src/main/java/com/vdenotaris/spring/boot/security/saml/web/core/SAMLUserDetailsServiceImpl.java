@@ -18,7 +18,6 @@ package com.vdenotaris.spring.boot.security.saml.web.core;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,6 +27,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
@@ -42,8 +42,9 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		// data in the SAML assertion and return UserDetails object describing the user.
 		
 		String userID = credential.getNameID().getValue();
-		
+		System.out.println("Assertion: "+credential.getAuthenticationAssertion());
 		LOG.info(userID + " is logged in");
+		
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
 		authorities.add(authority);
@@ -53,5 +54,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		// returns such a date in a form of application specific UserDetails object.
 		return new User(userID, "<abc123>", true, true, true, true, authorities);
 	}
+	
+	
 	
 }

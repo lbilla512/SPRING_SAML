@@ -21,6 +21,7 @@ import java.security.Principal;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.saml.SAMLCredential;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -44,6 +45,8 @@ public class CurrentUserHandlerMethodArgumentResolver implements
 			WebDataBinderFactory binderFactory) throws Exception {
 		if (this.supportsParameter(methodParameter)) {
 			Principal principal = (Principal) webRequest.getUserPrincipal();
+			
+			System.out.println("Assertion: "+((SAMLCredential)((Authentication) principal).getCredentials()).getAuthenticationAssertion().toString());
 			return (User) ((Authentication) principal).getPrincipal();
 		} else {
 			return WebArgumentResolver.UNRESOLVED;

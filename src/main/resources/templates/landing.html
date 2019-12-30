@@ -6,6 +6,7 @@
     </head>
     <body>
         <h1>You are logged as <span th:text="${username}">null</span>!</h1>
+        <xml Id = "Assertion" SRC = "Assertion.xml"> </xml>
         <p>
             <a th:href="@{/saml/logout}">Global Logout</a><br/>
     		<a th:href="@{/saml/logout?local=true}">Local Logout</a>

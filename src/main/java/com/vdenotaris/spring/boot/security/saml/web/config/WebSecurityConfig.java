@@ -16,11 +16,15 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.config;
 
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Timer;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +32,7 @@ import javax.annotation.PreDestroy;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.velocity.app.VelocityEngine;
@@ -43,6 +48,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -101,6 +107,7 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.vdenotaris.spring.boot.security.saml.web.core.SAMLAuthenticationSuccessHandler;
 import com.vdenotaris.spring.boot.security.saml.web.core.SAMLUserDetailsServiceImpl;
 
 @Configuration
@@ -115,6 +122,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public void init() {
 		this.backgroundTaskTimer = new Timer(true);
 		this.multiThreadedHttpConnectionManager = new MultiThreadedHttpConnectionManager();
+		final Properties props = System.getProperties();
+		props.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
+		props.setProperty("javax.net.ssl.HostnameVerifier", Boolean.FALSE.toString());
+		
 	}
 
 	@PreDestroy
@@ -146,8 +157,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	// Bindings, encoders and decoders used for creating and parsing messages
 	@Bean
-	public HttpClient httpClient() {
-		return new HttpClient(this.multiThreadedHttpConnectionManager);
+	public HttpClient httpClient() {	
+		
+		HttpClient httpClient = new HttpClient(this.multiThreadedHttpConnectionManager);
+		
+		return httpClient;
 	}
 
 	// SAML Authentication Provider responsible for validating of received SAML
@@ -224,17 +238,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		String defaultKey = "apollo";
 		return new JKSKeyManager(storeFile, storePass, passwords, defaultKey);
 	}
-
+	
 	// Setup TLS Socket Factory
 	@Bean
 	public TLSProtocolConfigurer tlsProtocolConfigurer() {
 		TLSProtocolConfigurer configurer = new TLSProtocolConfigurer();
+		configurer.setSslHostnameVerification("allowAll");
 		return configurer;
 	}
 
 	@Bean
 	public ProtocolSocketFactory socketFactory() {
-		return new TLSProtocolSocketFactory(keyManager(), null, "default");
+		
+		
+		return new TLSProtocolSocketFactory(keyManager(), null, "allowAll");
 	}
 
 	@Bean
@@ -249,6 +266,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		methodInvokingFactoryBean.setTargetMethod("registerProtocol");
 		Object[] args = { "https", socketFactoryProtocol() };
 		methodInvokingFactoryBean.setArguments(args);
+		
 		return methodInvokingFactoryBean;
 	}
 
@@ -290,15 +308,38 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Qualifier("idp-ssocircle")
 	public ExtendedMetadataDelegate ssoCircleExtendedMetadataProvider() throws MetadataProviderException {
 		String idpSSOCircleMetadataURL = "https://idp.ssocircle.com/idp-meta.xml";
+		//String idpSSOCircleMetadataURL = "https://dev-856753.oktapreview.com/app/exkoxna6axOLKemok0h7/sso/saml/metadata";
+		//String idpSSOCircleMetadataURL = "classpath:/saml/okta.xml";
 		HTTPMetadataProvider httpMetadataProvider = new HTTPMetadataProvider(this.backgroundTaskTimer, httpClient(),
 				idpSSOCircleMetadataURL);
 		httpMetadataProvider.setParserPool(parserPool());
 		ExtendedMetadataDelegate extendedMetadataDelegate = new ExtendedMetadataDelegate(httpMetadataProvider,
 				extendedMetadata());
-		extendedMetadataDelegate.setMetadataTrustCheck(true);
+		extendedMetadataDelegate.setMetadataTrustCheck(false);
 		extendedMetadataDelegate.setMetadataRequireSignature(false);
 		backgroundTaskTimer.purge();
 		return extendedMetadataDelegate;
+	}
+	
+	@Bean
+	@Qualifier("idp-okta")
+	public ExtendedMetadataDelegate oktaCircleExtendedMetadataProvider() throws MetadataProviderException {
+		//String idpSSOCircleMetadataURL = "https://idp.ssocircle.com/idp-meta.xml";
+	//	String idpoktaSSOCircleMetadataURL = "~/src/main/resources/saml/okta.xml";
+		String idpoktaSSOCircleMetadataURL = "http://dev-856753.oktapreview.com/app/exkp16rx3bOtNjse40h7/sso/saml/metadata";
+		
+		final Properties props = System.getProperties();
+		props.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());			
+		
+		HTTPMetadataProvider httpoktaMetadataProvider = new HTTPMetadataProvider(this.backgroundTaskTimer, httpClient(),
+				idpoktaSSOCircleMetadataURL);
+		httpoktaMetadataProvider.setParserPool(parserPool());
+		ExtendedMetadataDelegate extendedoktaMetadataDelegate = new ExtendedMetadataDelegate(httpoktaMetadataProvider,
+				extendedMetadata());
+		extendedoktaMetadataDelegate.setMetadataTrustCheck(false);
+		extendedoktaMetadataDelegate.setMetadataRequireSignature(false);
+		backgroundTaskTimer.purge();
+		return extendedoktaMetadataDelegate;
 	}
 
 	// IDP Metadata configuration - paths to metadata of IDPs in circle of trust
@@ -309,6 +350,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public CachingMetadataManager metadata() throws MetadataProviderException {
 		List<MetadataProvider> providers = new ArrayList<MetadataProvider>();
 		providers.add(ssoCircleExtendedMetadataProvider());
+		providers.add(oktaCircleExtendedMetadataProvider());
 		return new CachingMetadataManager(providers);
 	}
 
@@ -316,7 +358,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Bean
 	public MetadataGenerator metadataGenerator() {
 		MetadataGenerator metadataGenerator = new MetadataGenerator();
-		metadataGenerator.setEntityId("com:fengxin58:spring:sp");
+		//metadataGenerator.setEntityId("com:fengxin58:spring:sp");
+		metadataGenerator.setEntityId("com:lbilla512:spring:sp");
 		metadataGenerator.setExtendedMetadata(extendedMetadata());
 		metadataGenerator.setIncludeDiscoveryExtension(false);
 		metadataGenerator.setKeyManager(keyManager());
@@ -329,12 +372,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public MetadataDisplayFilter metadataDisplayFilter() {
 		return new MetadataDisplayFilter();
 	}
-
+	
+	@Bean
+	public SAMLAuthenticationSuccessHandler successHandler() {
+		return new SAMLAuthenticationSuccessHandler();
+	}
+	
 	// Handler deciding where to redirect user after successful login
 	@Bean
-	public SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler() {
-		SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler = new SavedRequestAwareAuthenticationSuccessHandler();
-		successRedirectHandler.setDefaultTargetUrl("/landing");
+	public SAMLAuthenticationSuccessHandler successRedirectHandler() {
+		SAMLAuthenticationSuccessHandler successRedirectHandler = successHandler();
+		successHandler().setDefaultTargetUrl("/landing");
 		return successRedirectHandler;
 	}
 
